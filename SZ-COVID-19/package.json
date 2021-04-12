@@ -1,0 +1,55 @@
+{
+  "name": "shenzhen",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "@antv/g2": "^4.0.8",
+    "@antv/l7": "^2.2.8",
+    "@antv/l7-district": "^2.2.9",
+    "@antv/l7-maps": "^2.2.8",
+    "core-js": "^3.6.4",
+    "d3": "^5.16.0",
+    "d3-fisheye": "^2.0.1",
+    "echarts": "^4.8.0",
+    "element-ui": "^2.13.2",
+    "lodash": "^4.17.19",
+    "swiper": "^5.4.2",
+    "vue": "^2.6.11",
+    "vue-awesome-swiper": "^4.1.1",
+    "vue-router": "^3.2.0"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "~4.3.0",
+    "@vue/cli-plugin-eslint": "~4.3.0",
+    "@vue/cli-service": "~4.3.0",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^6.7.2",
+    "eslint-plugin-vue": "^6.2.2",
+    "less-loader": "^6.1.0",
+    "vue-template-compiler": "^2.6.11"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "parser": "babel-eslint"
+    },
+    "rules": {}
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}
