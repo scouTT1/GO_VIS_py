@@ -8,7 +8,7 @@
     import Force from './components/force'
 
     export default {
-        name: 'Case',
+        name: 'Information',
         components: {
             Force,
         }

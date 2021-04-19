@@ -14,6 +14,6 @@ menus.forEach(item => {
     })
 })
 
-routes.push({ path: '/', redirect: '/pc' })
+routes.push({ path: '/', redirect: '/Ranking' })
 
 export default new Router({ routes })

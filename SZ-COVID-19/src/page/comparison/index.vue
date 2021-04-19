@@ -1,21 +1,21 @@
 <template>
-   <div id="pc">
-       <div class="pc-left">
+   <div id="comparison">
+       <div class="comparison-left">
             <Section
                 class="left-map"
-                title="深圳市疫情防控重点区域"
+                title="棋手对比热力图"
                 height="100%"
             >
                 <div class="part-sz">
-                    <SzStatic />
-                    <SzMap />
+                    <!--<SzStatic />-->
+                    <!--<SzMap />-->
                 </div>
             </Section>
        </div>
-        <div class="pc-right">
+        <div class="comparison-right">
              <Section
                 class="right-list"
-                title="深圳市各区疫情防控形势"
+                title="棋手A"
                 height="100%"
             >
                 <div class="part-list">
@@ -23,7 +23,7 @@
                 </div>
             </Section>
             <Section
-                title="国内主要城市新增确诊趋势"
+                title="棋手B"
                 class="right-map"
                 height="100%"
             >
@@ -39,29 +39,28 @@
 
 
 import Section from '@/components/section'
-import SzMap from './components/szMap2'
-import SzStatic from './components/szStatic'
+//import SzMap from './components/szMap2'
+//import SzStatic from './components/szStatic'
 import List from './components/list'
 import LineChart from './components/lineChart'
 
-
 export default {
-    name: 'PC',
+    name: 'Comparison',
     components: {
         Section,
         List,
-        SzMap,
-        SzStatic,
+        //SzMap,
+        //SzStatic,
         LineChart,
     },
 };
 </script>
 
 <style lang="less" scoped>
-    #pc{
+    #comparison{
         display: flex;
         height: 100%;
-        .pc-left {
+        .comparison-left {
             width: 66%;
             overflow: hidden;
             .left-map {
@@ -77,7 +76,7 @@ export default {
                 }
             }
         }
-        .pc-right {
+        .comparison-right {
             margin-left: 20px;
             display: flex;
             flex-direction: column;

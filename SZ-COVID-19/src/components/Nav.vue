@@ -19,7 +19,7 @@
             </el-menu>
         </div>
         <div class="vis-brand-time">{{date}}</div>
-        <div class="vis-brand-title">深圳市疫情可视分析系统</div>
+        <div class="vis-brand-title">围棋棋手数据可视分析系统</div>
     </div>
 </template>
 
@@ -32,7 +32,7 @@
         name: 'Nav',
         data() {
             return {
-                activeIndex: 'pc',
+                activeIndex: 'Ranking',
                 nowIndex: window.location.hash.replace('#/', '').toLowerCase(),
                 menu: menu,
                 date: '',

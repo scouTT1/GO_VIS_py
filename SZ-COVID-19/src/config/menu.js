@@ -1,14 +1,14 @@
 module.exports = [{
-    name: '疫情防控分析',
-    comName: 'PC',
-    path: 'pc',
+    name: '排名概览视图',
+    comName: 'Ranking',
+    path: 'ranking',
   }, {
-    name: '传播模式分析',
-    comName: 'Track',
-    path: 'track',
+    name: '棋手信息视图',
+    comName: 'Information',
+    path: 'information',
   }, {
-    name: '病例特征分析',
-    comName: 'Case',
-    path: 'case',
+    name: '棋手对比视图',
+    comName: 'Comparison',
+    path: 'comparison',
   }
 ]

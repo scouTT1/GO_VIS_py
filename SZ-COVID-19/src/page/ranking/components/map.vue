@@ -3,8 +3,8 @@
         <div class="map-tool">
             <el-switch
                 v-model="isAll"
-                active-text="累计"
-                inactive-text="新增"
+                active-text="男"
+                inactive-text="女"
                 inactive-color="#b2d4f3"
                 @change="handleAllChange"
             />
@@ -515,7 +515,7 @@
         position: relative;
         padding: 0;
         margin: 0;
-        width: 70%;
+        width: 100%;
         .map-tool {
             position: absolute;
             top: 5px;

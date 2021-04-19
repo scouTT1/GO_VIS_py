@@ -47,13 +47,13 @@
                         value: d.coord.concat(8),
                     }))
                 },
-                initMap () { 
+                initMap () {
                     const communityData = this.initCommunity();
                     const outpatientData = this.initOutpatient();
                     this.chart = echarts.init(this.$refs.map)
                     this.chart.setOption({
                         animation: false,
-                        bmap: { 
+                        bmap: {
                             center: [114.16455183658751, 22.628456637984177],
                             zoom: 11,
                             roam: true,
@@ -76,13 +76,13 @@
                                                 发现疑似病例: &nbsp;&nbsp;&nbsp;
                                             `
                                         break;
-                                    case '确诊病例小区': 
+                                    case '确诊病例小区':
                                         final = `
                                             ${d.seriesName}<br />
                                             ${d.marker}${d.name}
                                         `
                                         break;
-                                    case '发热门诊': 
+                                    case '发热门诊':
                                         final = `
                                                 ${d.marker}${d.name}<br />
                                                 累计接诊: &nbsp;&nbsp;&nbsp;<br />
@@ -221,9 +221,9 @@
                             var ply = new window.BMap.Polygon(rs.boundaries[i], style); //建立多边形覆盖物
                             this.bmap.addOverlay(ply);  //添加覆盖物
                             pointArray = pointArray.concat(ply.getPath());
-                        }    
-                        // this.bmap.setViewport(pointArray);    //调整视野  
-                    });   
+                        }
+                        // this.bmap.setViewport(pointArray);    //调整视野
+                    });
                 }
             }
         }
