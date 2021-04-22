@@ -10,10 +10,99 @@
     import 'echarts/lib/chart/sankey'
     import TrackJSON from '@/data/track'
     // import { scaleLinear } from 'd3'
+    console.log("fasdfasdfsdf")
+    /*
+    window.onload=function(){
+        var url="./history_ranking.json";
+        var request=new XMLHttpRequest();
+        request.open("get",url);
+        request.send(null);
+        request.onload=function(){
+            if(request.status==200){
+                var json=JSON.parse(request.responseText);
+                console.log(json)
+            }
+        }
 
+    }*/
+    import history_ranking from "./history_ranking.json"
 
+    /*json文件url，本地的就写本地的位置，如果是服务器的就写服务器的路径*/
+    //console.log(history_ranking)
+
+    var CHlist=[42];
+    var JPlist=[42];
+    var KOlist=[42];
+    var OTlist=[43];
+    var i;
+    for(var js in history_ranking){
+        var templist=history_ranking[js];
+        var CH=0;
+        var JP=0;
+        var KO=0;
+        for(i=0;i<templist.length;i++){
+            if(templist[i].country=="日本"){
+                JP=JP+1;
+            }
+            else if(templist[i].country=="中国"){
+                CH=CH+1;
+            }
+            else if(templist[i].country=="韩国"){
+                KO=KO+1;
+            }
+        }
+        CHlist[parseInt(js)-1980]=CH;
+        JPlist[parseInt(js)-1980]=JP;
+        KOlist[parseInt(js)-1980]=KO;
+        OTlist[parseInt(js)-1980]=100-CH-JP-KO;
+
+    }
+    //console.log(CHlist)
+    //console.log(JPlist)
+    //console.log(KOlist)
+    //console.log(OTlist)
+    
+    var TimeList=[42];
+    for(i=0;i<42;i++){
+        TimeList[i]=(i+1980).toString()+"-01-01";
+    }
+    //console.log(TimeList)
+    var dataList=[[]];
+    //var num=0;
+    for(i=0;i<42;i++){
+        var ttlist=[];
+        ttlist[0]=TimeList[i];
+        ttlist[1]=CHlist[i];
+        ttlist[2]="中国";
+        dataList[i]=ttlist;
+        
+    }
+    for(i=0;i<42;i++){
+        var ttlist=[];
+        ttlist[0]=TimeList[i];
+        ttlist[1]=JPlist[i];
+        ttlist[2]="日本";
+        dataList[i+42]=ttlist;
+        
+    }
+    for(i=0;i<42;i++){
+        var ttlist=[];
+        ttlist[0]=TimeList[i];
+        ttlist[1]=KOlist[i];
+        ttlist[2]="韩国";
+        dataList[i+84]=ttlist;
+        
+    }
+    for(i=0;i<42;i++){
+        var ttlist=[];
+        ttlist[0]=TimeList[i];
+        ttlist[1]=OTlist[i];
+        ttlist[2]="其他";
+        dataList[i+126]=ttlist;
+        
+    }
+    console.log(dataList);
     const DIM = ['age_range', 'xb','period','origin', 'tran', ]
-
     const ITEM_STYLE = {
         xb(){
             return {
@@ -213,117 +302,96 @@
                 };*/
                 const option={
                     tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-            type: 'line',
-            lineStyle: {
-                color: 'rgba(0,0,0,0.2)',
-                width: 1,
-                type: 'solid'
-            }
-        }
-    },
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'line',
+                            lineStyle: {
+                                color: 'rgba(0,0,0,0.2)',
+                                width: 1,
+                                type: 'solid'
+                            },
+                            
+                        },
+                    },
 
-    legend: {
-        data: ['DQ', 'TY', 'SS', 'QG', 'SY', 'DD']
-    },
+                    legend: {
+                        data: ['中国', '日本', '韩国', '其他'],
+                        textStyle:{
+                            //字体颜色
+                            color:'#fff',
+                            //字体风格
+                            fontStyle:'normal',
+                            //字体大小
+                            
+                            
+                        },
+                    },
+                    
+                    singleAxis: {
+                        top: 50,
+                        bottom: 50,
+                        axisTick: {},
+                        axisLabel: {},
+                        type: 'time',
+                        axisPointer: {
+                            animation: true,
+                            label: {
+                                show: true
+                            }
+                        },
+                        
+                     splitLine: {
+                            show: true,
+                            lineStyle: {
+                                type: 'dashed',
+                                opacity: 0.2
+                            }
+                        }
+                    },
 
-    singleAxis: {
-        top: 50,
-        bottom: 50,
-        axisTick: {},
-        axisLabel: {},
-        type: 'time',
-        axisPointer: {
-            animation: true,
-            label: {
-                show: true
-            }
-        },
-        splitLine: {
-            show: true,
-            lineStyle: {
-                type: 'dashed',
-                opacity: 0.2
-            }
-        }
-    },
+                    dataZoom: [{
+                                        type: 'slider',
+                                        backgroundColor: 'rgba(31, 108, 117, .1)',
+                                        fillerColor: 'rgba(18, 38, 106, .6)',
+                                        height: 15,
+                                        bottom: 5,
+                                        left: 'center',
+                                        borderColor: 'rgba(18, 38, 106, .5)',
+                                        handleIcon: 'image://data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/PjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+PHN2ZyB0PSIxNTkxOTQ4OTgzMzYzIiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjMwMDAwIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiPjxkZWZzPjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+PC9zdHlsZT48L2RlZnM+PHBhdGggZD0iTTUxMiAwYTUxMiA1MTIgMCAxIDAgNTEyIDUxMkE1MTIgNTEyIDAgMCAwIDUxMiAweiBtLTQ0LjQ4IDY1NmE0NC40OCA0NC40OCAwIDEgMS04OS4xMiAwVjM2OGE0NC40OCA0NC40OCAwIDEgMSA4OS4xMiAwdjI4OHogbTE3OC4wOCAwYTQ0LjQ4IDQ0LjQ4IDAgMSAxLTg5LjEyIDBWMzY4YTQ0LjQ4IDQ0LjQ4IDAgMSAxIDg5LjEyIDB2Mjg4eiIgZmlsbD0iIzFlM2ZmYSIgcC1pZD0iMzAwMDEiPjwvcGF0aD48L3N2Zz4=',
+                                        showDetail: true,
+                                        textStyle:{
+                                            color:'#0ff',
+                                            //字体风格
+                                            fontStyle:'normal',
+                                            //字体大小
+                                            fontWeight:'bold'
+                                        }
+                                        
+                                    }] ,
+                            
 
-    dataZoom: [{
-                        type: 'slider',
-                        backgroundColor: 'rgba(31, 108, 117, .1)',
-                        fillerColor: 'rgba(18, 38, 106, .6)',
-                        height: 15,
-                        bottom: 5,
-                        left: 'center',
-                        borderColor: 'rgba(18, 38, 106, .5)',
-                        handleIcon: 'image://data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/PjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+PHN2ZyB0PSIxNTkxOTQ4OTgzMzYzIiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjMwMDAwIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiPjxkZWZzPjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+PC9zdHlsZT48L2RlZnM+PHBhdGggZD0iTTUxMiAwYTUxMiA1MTIgMCAxIDAgNTEyIDUxMkE1MTIgNTEyIDAgMCAwIDUxMiAweiBtLTQ0LjQ4IDY1NmE0NC40OCA0NC40OCAwIDEgMS04OS4xMiAwVjM2OGE0NC40OCA0NC40OCAwIDEgMSA4OS4xMiAwdjI4OHogbTE3OC4wOCAwYTQ0LjQ4IDQ0LjQ4IDAgMSAxLTg5LjEyIDBWMzY4YTQ0LjQ4IDQ0LjQ4IDAgMSAxIDg5LjEyIDB2Mjg4eiIgZmlsbD0iIzFlM2ZmYSIgcC1pZD0iMzAwMDEiPjwvcGF0aD48L3N2Zz4=',
-                        showDetail: true,
-                    }] ,
-               
-
-    series: [
-        {
-            type: 'themeRiver',
-            emphasis: {
-                itemStyle: {
-                    shadowBlur: 20,
-                    shadowColor: 'rgba(0, 0, 0, 0.8)'
-                }
-            },
-            data: [['2015/11/08',10,'DQ'],['2015/11/09',15,'DQ'],['2015/11/10',35,'DQ'],
-            ['2015/11/11',38,'DQ'],['2015/11/12',22,'DQ'],['2015/11/13',16,'DQ'],
-            ['2015/11/14',7,'DQ'],['2015/11/15',2,'DQ'],['2015/11/16',17,'DQ'],
-            ['2015/11/17',33,'DQ'],['2015/11/18',40,'DQ'],['2015/11/19',32,'DQ'],
-            ['2015/11/20',26,'DQ'],['2015/11/21',35,'DQ'],['2015/11/22',40,'DQ'],
-            ['2015/11/23',32,'DQ'],['2015/11/24',26,'DQ'],['2015/11/25',22,'DQ'],
-            ['2015/11/26',16,'DQ'],['2015/11/27',22,'DQ'],['2015/11/28',10,'DQ'],
-            ['2015/11/08',35,'TY'],['2015/11/09',36,'TY'],['2015/11/10',37,'TY'],
-            ['2015/11/11',22,'TY'],['2015/11/12',24,'TY'],['2015/11/13',26,'TY'],
-            ['2015/11/14',34,'TY'],['2015/11/15',21,'TY'],['2015/11/16',18,'TY'],
-            ['2015/11/17',45,'TY'],['2015/11/18',32,'TY'],['2015/11/19',35,'TY'],
-            ['2015/11/20',30,'TY'],['2015/11/21',28,'TY'],['2015/11/22',27,'TY'],
-            ['2015/11/23',26,'TY'],['2015/11/24',15,'TY'],['2015/11/25',30,'TY'],
-            ['2015/11/26',35,'TY'],['2015/11/27',42,'TY'],['2015/11/28',42,'TY'],
-            ['2015/11/08',21,'SS'],['2015/11/09',25,'SS'],['2015/11/10',27,'SS'],
-            ['2015/11/11',23,'SS'],['2015/11/12',24,'SS'],['2015/11/13',21,'SS'],
-            ['2015/11/14',35,'SS'],['2015/11/15',39,'SS'],['2015/11/16',40,'SS'],
-            ['2015/11/17',36,'SS'],['2015/11/18',33,'SS'],['2015/11/19',43,'SS'],
-            ['2015/11/20',40,'SS'],['2015/11/21',34,'SS'],['2015/11/22',28,'SS'],
-            ['2015/11/23',26,'SS'],['2015/11/24',37,'SS'],['2015/11/25',41,'SS'],
-            ['2015/11/26',46,'SS'],['2015/11/27',47,'SS'],['2015/11/28',41,'SS'],
-            ['2015/11/08',10,'QG'],['2015/11/09',15,'QG'],['2015/11/10',35,'QG'],
-            ['2015/11/11',38,'QG'],['2015/11/12',22,'QG'],['2015/11/13',16,'QG'],
-            ['2015/11/14',7,'QG'],['2015/11/15',2,'QG'],['2015/11/16',17,'QG'],
-            ['2015/11/17',33,'QG'],['2015/11/18',40,'QG'],['2015/11/19',32,'QG'],
-            ['2015/11/20',26,'QG'],['2015/11/21',35,'QG'],['2015/11/22',40,'QG'],
-            ['2015/11/23',32,'QG'],['2015/11/24',26,'QG'],['2015/11/25',22,'QG'],
-            ['2015/11/26',16,'QG'],['2015/11/27',22,'QG'],['2015/11/28',10,'QG'],
-            ['2015/11/08',10,'SY'],['2015/11/09',15,'SY'],['2015/11/10',35,'SY'],
-            ['2015/11/11',38,'SY'],['2015/11/12',22,'SY'],['2015/11/13',16,'SY'],
-            ['2015/11/14',7,'SY'],['2015/11/15',2,'SY'],['2015/11/16',17,'SY'],
-            ['2015/11/17',33,'SY'],['2015/11/18',40,'SY'],['2015/11/19',32,'SY'],
-            ['2015/11/20',26,'SY'],['2015/11/21',35,'SY'],['2015/11/22',4,'SY'],
-            ['2015/11/23',32,'SY'],['2015/11/24',26,'SY'],['2015/11/25',22,'SY'],
-            ['2015/11/26',16,'SY'],['2015/11/27',22,'SY'],['2015/11/28',10,'SY'],
-            ['2015/11/08',10,'DD'],['2015/11/09',15,'DD'],['2015/11/10',35,'DD'],
-            ['2015/11/11',38,'DD'],['2015/11/12',22,'DD'],['2015/11/13',16,'DD'],
-            ['2015/11/14',7,'DD'],['2015/11/15',2,'DD'],['2015/11/16',17,'DD'],
-            ['2015/11/17',33,'DD'],['2015/11/18',4,'DD'],['2015/11/19',32,'DD'],
-            ['2015/11/20',26,'DD'],['2015/11/21',35,'DD'],['2015/11/22',40,'DD'],
-            ['2015/11/23',32,'DD'],['2015/11/24',26,'DD'],['2015/11/25',22,'DD'],
-            ['2015/11/26',16,'DD'],['2015/11/27',22,'DD'],['2015/11/28',10,'DD']]
-                 }
-             ]
-         };                    
-                const myChart = echarts.init(document.getElementById('sankey'), 'light');
-                myChart.setOption(option)
-            }
-        },
-        mounted() {
-            setTimeout(this.initChart);
-        }
-    }
+                    series: [
+                        {
+                            type: 'themeRiver',
+                            emphasis: {
+                                itemStyle: {
+                                    shadowBlur: 20,
+                                    shadowColor: 'rgba(0, 0, 0, 0.8)'
+                                }
+                            },
+                            color:['#ff0000','#dec674','#6495ED','#8A2BE2'],
+                            data: dataList
+                                }
+                            ]
+                        };                    
+                                const myChart = echarts.init(document.getElementById('sankey'), 'light');
+                                myChart.setOption(option)
+                            }
+                        },
+                        mounted() {
+                            setTimeout(this.initChart);
+                        }
+                    }
 </script>
 
 <style lang="less" scoped>
