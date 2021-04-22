@@ -4,6 +4,7 @@ import App from './App.vue'
 import router from './router'
 import 'element-ui/lib/theme-chalk/index.css'
 import './main.css'
+// import * as echarts from 'echarts';
 
 Vue.config.productionTip = false
 Vue.use(ElementUI);

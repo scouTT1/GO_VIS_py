@@ -26,7 +26,7 @@
                 <li
                     v-for="(item,index) in listArr"
                     :key="item.name"
-                    :class="index===active? smart_index : normal_index"
+                    :class="{smart_index :active==index}"
                     @mouseover="mouseOver(item,index)"
                     @mouseleave="mouseLeave(item,index)"
                 >
@@ -56,7 +56,7 @@ export default {
     data() {
         return {
             tableData:[],
-            active: 0,
+            active: -1,
             checkboxGroup: ['男','女'],
             sex_male: ['男'],
             sex_female: ['女'],
@@ -190,13 +190,16 @@ export default {
             this.initData();
         },
         mouseOver(item,index){
+            //this.active[index]='background-color: #ffffff';
             this.active=index;
             eventBus.$emit('selectPlayerInfo',{
                 playerInfo: item
             });
         },
         mouseLeave(item,index){
-            this.active=index;
+            //this.active[index]='background-color: #09141D';
+            this.active=-1;
+            console.log(item,index);
         }
     },
     mounted() {
@@ -240,8 +243,5 @@ export default {
     }
     .smart_index{
         background-color: #fff;
-    }
-    .normal_index{
-        background-color: yellow;
     }
 </style>

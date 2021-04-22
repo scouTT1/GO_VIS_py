@@ -7,8 +7,9 @@
                 height="100%"
             >
                 <div class="part-sz">
-                    <!--<SzStatic />-->
-                    <!--<SzMap />-->
+                    <!--<heatmap />-->
+                    <SzStatic />
+                    <SzMap />
                 </div>
             </Section>
        </div>
@@ -39,8 +40,9 @@
 
 
 import Section from '@/components/section'
-//import SzMap from './components/szMap2'
-//import SzStatic from './components/szStatic'
+import SzMap from './components/szMap2'
+import SzStatic from './components/szStatic'
+//import heatmap from './components/heatmap'
 import List from './components/list'
 import LineChart from './components/lineChart'
 
@@ -49,8 +51,9 @@ export default {
     components: {
         Section,
         List,
-        //SzMap,
-        //SzStatic,
+        //heatmap,
+        SzMap,
+        SzStatic,
         LineChart,
     },
 };
