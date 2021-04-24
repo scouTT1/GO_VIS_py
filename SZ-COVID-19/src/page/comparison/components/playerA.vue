@@ -1,20 +1,18 @@
 <template>
     <div class="table-container" ref="container">
-        <el-tabs v-model="activeName" @tab-click="handleClick" class="tab"
-            style="background:white;"
-            active-text-color="white">
+        <el-tabs v-model="activeName" class="tab">
             <el-tab-pane label="个人信息" name="first" class="tab-item1">
                 <ul>
                     <li>姓名：{{player_a.name_zh}}</li>
                     <li>性别：{{player_a.sex}}</li>
                     <li>地区：{{player_a.country}}</li>
-                    <li>对局数：{{player_a.match_list.length}}</li>
+                    <li>对局数：{{num_all_matches}}</li>
                     <li>胜率：{{win_rate}}</li>
                     <li>执黑胜率：{{black_win_rate}}</li>
                     <li>执白胜率：{{white_win_rate}}</li>
                 </ul>
             </el-tab-pane>
-            <el-tab-pane label="对局信息" name="second" class="tab-item2">
+            <el-tab-pane label="对局信息" name="second" class="tab-item2" id="ti2">
                 <ul>
                     <li v-for="item in matchList" 
                         v-bind:key="item">
@@ -33,7 +31,6 @@
 <script>
     //import _ from 'lodash'
     //import PartJSON from '@/data/part'
-    //import Scatter from './scatter'
     import eventBus from '../eventBus'
 
     export default {
@@ -42,9 +39,10 @@
             return {
                 player_a: [],
                 matchList: [],
-                win_rate: 0,
-                black_win_rate: 0,
-                white_win_rate: 0,
+                num_all_matches: undefined,
+                win_rate: undefined,
+                black_win_rate: undefined,
+                white_win_rate: undefined,
                 activeName: 'first',
             }
         },
@@ -53,6 +51,7 @@
                 eventBus.$on('player_compare_info',({player_a,player_b})=>{
                     this.player_a=player_a;
                     this.player_b=player_b;
+                    this.num_all_matches=this.player_a.match_list.length;
                     this.matchList=[];
                     var bl_win=0;
                     var wh_win=0;
@@ -63,6 +62,8 @@
                             const r_info=this.player_a.match_list[i].result_info
                             if (r_info=='R'){
                                 this.player_a.match_list[i].result_info='中盘';
+                            }else if(r_info=='T'){
+                                this.player_a.match_list[i].result_info='超时';
                             }else if(!isNaN(Number(r_info))){
                                 this.player_a.match_list[i].result_info=r_info+'目';
                             }
@@ -101,19 +102,21 @@
     .table-container{
         height: 100%;
         width: 100%;
-        
         .tab{
-            background: #727171;
+            //color: #727171;
             width: 100%;
+            height: 100%;
+            text-align: center;
+            font-size: 25px !important;
+            title-active-color: red;
+            .is-active{ //有效地改变了表头的背景
+                color: white !important;
+                //background-color: #727171 !important;
+            }
             .tab-item1{
                 width: 100%;
                 display: inline-block;
-                .is-active{
-                    color:rgb(73,178,82);
-                }
-                .not-active{
-                    color: yellow;
-                }
+                //background-color: #727171 !important;// 有效地改变了表内容的背景
                 ul {
                     padding-left: 0;
                     color: #aaa;

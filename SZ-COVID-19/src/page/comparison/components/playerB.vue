@@ -1,12 +1,12 @@
 <template>
     <div class="table-container" ref="container">
-        <el-tabs v-model="activeName" @tab-click="handleClick" class="tab">
+        <el-tabs v-model="activeName" class="tab">
             <el-tab-pane label="个人信息" name="first" class="tab-item1">
                 <ul>
                     <li>姓名：{{player_b.name_zh}}</li>
                     <li>性别：{{player_b.sex}}</li>
                     <li>地区：{{player_b.country}}</li>
-                    <li>对局数：{{player_b.match_list.length}}</li>
+                    <li>对局数：{{num_all_matches}}</li>
                     <li>胜率：{{win_rate}}</li>
                     <li>执黑胜率：{{black_win_rate}}</li>
                     <li>执白胜率：{{white_win_rate}}</li>
@@ -31,9 +31,7 @@
 <script>
     //import _ from 'lodash'
     //import PartJSON from '@/data/part'
-    //import Scatter from './scatter'
     import eventBus from '../eventBus'
-    //import { extent } from 'd3'
 
     export default {
         name: 'List',
@@ -41,9 +39,10 @@
             return {
                 player_b: [],
                 matchList: [],
-                win_rate: 0,
-                black_win_rate: 0,
-                white_win_rate: 0,
+                num_all_matches: undefined,
+                win_rate: undefined,
+                black_win_rate: undefined,
+                white_win_rate: undefined,
                 activeName: 'first',
             }
         },
@@ -52,6 +51,7 @@
                 eventBus.$on('player_compare_info',({player_a,player_b})=>{
                     this.player_a=player_a;
                     this.player_b=player_b;
+                    this.num_all_matches=this.player_b.match_list.length;
                     this.matchList=[];
                     var bl_win=0;
                     var wh_win=0;
@@ -62,6 +62,8 @@
                             const r_info=this.player_b.match_list[i].result_info
                             if (r_info=='R'){
                                 this.player_b.match_list[i].result_info='中盘';
+                            }else if(r_info=='T'){
+                                this.player_b.match_list[i].result_info='超时';
                             }else if(!isNaN(Number(r_info))){
                                 this.player_b.match_list[i].result_info=r_info+'目';
                             }

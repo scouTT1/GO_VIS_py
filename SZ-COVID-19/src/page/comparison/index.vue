@@ -7,29 +7,31 @@
                 height="100%"
             >
                 <div class="part-sz">
-                    <!--<heatmap />-->
-                    <SzStatic />
-                    <SzMap />
+                    <heatmap />
+                    <!--<SzStatic />
+                    <SzMap />-->
                 </div>
             </Section>
        </div>
         <div class="comparison-right">
              <Section
                 class="right-list"
-                title="棋手A"
+                title="棋手信息"
                 height="100%"
             >
                 <div class="part-list">
-                    <List />
+                    <!--<List />-->
+                    <playerA />
                 </div>
             </Section>
             <Section
-                title="棋手B"
-                class="right-map"
+                title="棋手信息"
+                class="right-list"
                 height="100%"
             >
-                <div class="part-world">
-                    <LineChart />
+                <div class="part-list">
+                    <!--<LineChart />-->
+                    <playerB />
                 </div>
             </Section>
        </div>
@@ -40,21 +42,25 @@
 
 
 import Section from '@/components/section'
-import SzMap from './components/szMap2'
-import SzStatic from './components/szStatic'
-//import heatmap from './components/heatmap'
-import List from './components/list'
-import LineChart from './components/lineChart'
+//import SzMap from './components/szMap2'
+//import SzStatic from './components/szStatic'
+import heatmap from './components/heatmap'
+//import List from './components/list'
+//import LineChart from './components/lineChart'
+import playerA from './components/playerA'
+import playerB from './components/playerB'
 
 export default {
     name: 'Comparison',
     components: {
         Section,
-        List,
-        //heatmap,
-        SzMap,
-        SzStatic,
-        LineChart,
+        //List,
+        heatmap,
+        //SzMap,
+        //SzStatic,
+        //LineChart,
+        playerA,
+        playerB,
     },
 };
 </script>
