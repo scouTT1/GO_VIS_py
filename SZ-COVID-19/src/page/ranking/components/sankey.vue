@@ -61,7 +61,7 @@
     //console.log(JPlist)
     //console.log(KOlist)
     //console.log(OTlist)
-    
+    //var ttlist=[];
     var TimeList=[42];
     for(i=0;i<42;i++){
         TimeList[i]=(i+1980).toString()+"-01-01";
@@ -78,7 +78,7 @@
         
     }
     for(i=0;i<42;i++){
-        var ttlist=[];
+       
         ttlist[0]=TimeList[i];
         ttlist[1]=JPlist[i];
         ttlist[2]="日本";
@@ -86,7 +86,7 @@
         
     }
     for(i=0;i<42;i++){
-        var ttlist=[];
+        
         ttlist[0]=TimeList[i];
         ttlist[1]=KOlist[i];
         ttlist[2]="韩国";
@@ -94,7 +94,7 @@
         
     }
     for(i=0;i<42;i++){
-        var ttlist=[];
+       
         ttlist[0]=TimeList[i];
         ttlist[1]=OTlist[i];
         ttlist[2]="其他";
@@ -272,7 +272,7 @@
                 return {nodes, links}
             },
             initChart() {
-                const { nodes, links } = this.initData()
+                //const { nodes, links } = this.initData()
                 
                /* const option = {
                     color: ['#87cc7c', '#966d4b', '#935740', '#69277e', '#9d4da7'],

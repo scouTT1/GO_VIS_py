@@ -55,13 +55,25 @@
                 var average=0;
                 //var infolist=['比赛结果','对手姓名','对手性别','对手国籍','对手分数'];
                 //var keylist=[3,4,6,7,1]
+                var index=-1;
+                var i;
+                for(i=0;i<data1.match_list.length;i++){
+                    
+                    data1.match_list[i].my_score>0;
+                    index =i;
+                    break;
+                }
 
-                for(var i=0;i<data1.match_list.length;i++){
+
+                if(index>=0){
+                    temp=data1.match_list[index].my_score;
+                }
+                for(i=0;i<data1.match_list.length;i++){
 
 
-                   // console.log("进入循环")
+                    // console.log("进入循环")
                     TimeList[i]=data1.match_list[i].match_time
-                   // console.log(TimeList[i])
+                    // console.log(TimeList[i])
                     //if(TimeList[i]=="2009-01-11")console.log("2009-01-11"+data1.match_list[i].my_score)
                     if(data1.match_list[i].my_score==parseInt(-1)){ 
                         //console.log("有问题")                       
@@ -69,7 +81,7 @@
                         average=average+temp;
                         continue;
                     }
-
+                    
                     ScoreList[i]=data1.match_list[i].my_score
                     if(minvalue>ScoreList[i]){
                         minvalue=ScoreList[i];
@@ -77,12 +89,10 @@
                     else if(maxvalue<ScoreList[i]){
 
                         maxvalue=ScoreList[i];
-
                     }
                     //console.log(ScoreList[i])
                     temp=ScoreList[i]
                     average=average+temp;
-
 
                 }
                 average=parseInt(average/data1.match_list.length);
@@ -105,17 +115,17 @@
                     title:{
                         text:"棋手成绩平均值:"+average,
                         textStyle:{
-        //文字颜色
-        color:'#ccc',
-        //字体风格,'normal','italic','oblique'
-        fontStyle:'normal',
-        //字体粗细 'normal','bold','bolder','lighter',100 | 200 | 300 | 400...
-        fontWeight:'bold',
-        //字体系列
-        fontFamily:'sans-serif',
-        //字体大小
-　　　　 fontSize:18,
-    }
+                        //文字颜色
+                        color:'#ccc',
+                        //字体风格,'normal','italic','oblique'
+                        fontStyle:'normal',
+                        //字体粗细 'normal','bold','bolder','lighter',100 | 200 | 300 | 400...
+                        fontWeight:'bold',
+                        //字体系列
+                        fontFamily:'sans-serif',
+                        //字体大小
+                　　　　 fontSize:18,
+                         }
                     },
 
                     tooltip: {
@@ -130,12 +140,12 @@
 
                         },
                         trigger: 'axis',
-                       //颜色未定
-                       backgroundColor:'rgba(50,50,50,0.7)',
-                       //边框颜色
-                       borderColor:'#333',
-                       //边框宽度
-                       borderWidth:3,
+                        //颜色未定
+                        backgroundColor:'rgba(50,50,50,0.7)',
+                        //边框颜色
+                        borderColor:'#333',
+                        //边框宽度
+                        borderWidth:3,
                         formatter:function(params){
                             var res=""
                             console.log("templist"+tempmatchlist[0].opponent_name)
