@@ -66,7 +66,6 @@
                             },
                         },
                     },
-
                     legend: {
                         data: ['中国', '日本', '韩国', '其他'],
                         textStyle:{
@@ -77,7 +76,6 @@
                             //字体大小
                         },
                     },
-
                     singleAxis: {
                         top: 50,
                         bottom: 50,
@@ -108,6 +106,9 @@
                         borderColor: 'rgba(18, 38, 106, .5)',
                         handleIcon: 'image://data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/PjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+PHN2ZyB0PSIxNTkxOTQ4OTgzMzYzIiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjMwMDAwIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiPjxkZWZzPjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+PC9zdHlsZT48L2RlZnM+PHBhdGggZD0iTTUxMiAwYTUxMiA1MTIgMCAxIDAgNTEyIDUxMkE1MTIgNTEyIDAgMCAwIDUxMiAweiBtLTQ0LjQ4IDY1NmE0NC40OCA0NC40OCAwIDEgMS04OS4xMiAwVjM2OGE0NC40OCA0NC40OCAwIDEgMSA4OS4xMiAwdjI4OHogbTE3OC4wOCAwYTQ0LjQ4IDQ0LjQ4IDAgMSAxLTg5LjEyIDBWMzY4YTQ0LjQ4IDQ0LjQ4IDAgMSAxIDg5LjEyIDB2Mjg4eiIgZmlsbD0iIzFlM2ZmYSIgcC1pZD0iMzAwMDEiPjwvcGF0aD48L3N2Zz4=',
                         showDetail: true,
+                        start:0,
+                        end:100,
+                        minValueSpan: 63158400000,
                         textStyle:{
                             color:'#0ff',
                             //字体风格
@@ -116,6 +117,7 @@
                             fontWeight:'bold'
                         }
                     }] ,
+
 
                     series: [{
                         type: 'themeRiver',
@@ -126,7 +128,10 @@
                             }
                         },
                         color:['#ff0000','#dec674','#6495ED','#8A2BE2'],
-                        data: dataList
+                        data: dataList,
+                        label: {
+                            show: false,
+                        }
                     }]
                 };
                 const myChart = echarts.init(document.getElementById('sankey'), 'light');
