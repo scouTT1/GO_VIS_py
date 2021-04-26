@@ -12,7 +12,7 @@
                     <li>执白胜率：{{white_win_rate}}</li>
                 </ul>
             </el-tab-pane>
-            <el-tab-pane label="对局信息" name="second" class="tab-item2" id="ti2">
+            <el-tab-pane label="对局信息" name="second" class="tab-item2">
                 <ul>
                     <li v-for="item in matchList" 
                         v-bind:key="item">
@@ -99,6 +99,9 @@
 </script>
 
 <style lang="less">
+    .el-tabs__item{
+        color:white;
+    }
     .table-container{
         height: 100%;
         width: 100%;
@@ -108,15 +111,9 @@
             height: 100%;
             text-align: center;
             font-size: 25px !important;
-            title-active-color: red;
-            .is-active{ //有效地改变了表头的背景
-                color: white !important;
-                //background-color: #727171 !important;
-            }
             .tab-item1{
                 width: 100%;
                 display: inline-block;
-                //background-color: #727171 !important;// 有效地改变了表内容的背景
                 ul {
                     padding-left: 0;
                     color: #aaa;

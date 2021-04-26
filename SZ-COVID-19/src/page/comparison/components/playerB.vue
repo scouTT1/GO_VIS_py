@@ -99,16 +99,17 @@
 </script>
 
 <style lang="less">
+    .el-tabs__item{
+        color:white;
+    }
     .table-container{
         height: 100%;
         width: 100%;
         .tab{
-            color: #727171;
             width: 100%;
             .tab-item1{
                 width: 100%;
                 display: inline-block;
-                color: #C8291C;
                 ul {
                     padding-left: 0;
                     color: #aaa;
