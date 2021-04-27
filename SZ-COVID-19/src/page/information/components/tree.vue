@@ -3,7 +3,7 @@
     <div id="tree-chart" :class="{'invisible': isHidden}">
 
     </div>
-    <NoData title="请选择病例关系" :class="{'d-none': !isHidden}" />
+    <NoData title="请选择对局" :class="{'d-none': !isHidden}" />
     </div>
 </template>
 
@@ -31,13 +31,14 @@
                     },
                     series:[
                         {
-                            name: '病例号',
+                            name: '姓名',
                             type: 'tree',
 
                             data: [this.data],
 
-                            left: '2%',
-                            right: '2%',
+                            left: '-200%',
+                            right: '-200%',
+                            roam: true,
                             // top: '8%',
                             // bottom: '20%',
 
@@ -85,8 +86,8 @@
                             tooltip: {
                                 // formatter: '病例号：{b0}'
                                 formatter: d => {
-                                    let name = d.data.name.split('(')[0];
-                                    return '病例号：' + name;
+                                    let name = d.data.name;
+                                    return '姓名：' + name;
                                 }
                             }
                         }
@@ -117,6 +118,7 @@
     .container {
         height: 100%;
         position: relative;
+        overflow: auto;
     }
     #tree-chart{
         height: 100%;

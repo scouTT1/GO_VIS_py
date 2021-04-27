@@ -1,61 +1,44 @@
 import _ from 'lodash'
-import TrackJSON from '@/data/track'
-
+import basicInfo from '@/data/player_basic_info.json'
+import match_list from '@/data/link_table.json'
+import id2zh from '@/data/id2zh.json'
+// import zh2id from '@/data/zh2id.json'
+// import player from '@/data/player'
+// import fs from 'fs'
 export function initData() {
-    const linkIds = [];
-    _.forIn(TrackJSON, d => {
-        const relation = d.yqtblgx;
-        const targetId = d.blh;
-        if (relation) {
-            const relationArr = relation.match(/\d+/g);
-            relationArr.forEach(sourceid => {
-                linkIds.push(sourceid, targetId)
-            })
+    let percent = [];
+    var upperbound = 0.0;
+    for(upperbound = 0.01; upperbound<=1.0;upperbound+=0.01){
+        percent.push(upperbound);
+    }
+    basicInfo.forEach(d=>{
+        d.level = d.level===undefined? '未知' : d.level;
+        d.country = d.country===undefined? '未知' : d.country;
+        d.score_new = d.score_new===undefined? 0 : d.score_new;
+        d.winProb = (d.num_total && d.num_wins) ? (d.num_wins*1.0/d.num_total) : 0.0;
+        if(d.country === '日本'){
+            d.family_name = d.name_zh.substring(0, 2);
         }
-    })
-    TrackJSON.forEach(d => {
-        let nlRange = ''
-        const nl = Number(d.nl);
-        if (nl <= 10) {
-            nlRange = '0~10'
-        } else if (nl > 10 && nl <= 20) {
-            nlRange = '10~20'
-        } else if (nl > 20 && nl <= 30) {
-            nlRange = '20~30'
-        } else if (nl > 30 && nl <= 40) {
-            nlRange = '30~40'
-        } else if (nl > 40 && nl <= 50) {
-            nlRange = '40~50'
-        } else {
-            nlRange = '50~以上'
+        else if(d.country === '中国' || d.country === '中国台湾' || d.country === '韩国' ){
+            d.family_name = d.name_zh.substring(0, 1);
         }
-        if(d.reason === ""){
-            d.reason = '未知'
+        else{
+            d.family_name = '其他';
         }
-        d.nlRange = nlRange;
-        d.relation = linkIds.includes(d.blh) ? '明确关系' : '单独病例';
-        
-        let livelocation = '未知' 
-        if(d.jzd) {
-            if (d.jzd.includes('深圳')) {
-                livelocation = '深圳'
-            } else if (d.jzd.includes('省')) {
-                livelocation = d.jzd.split('省')[0]
-            } else {
-                livelocation = d.jzd;
+        for(upperbound in percent){
+            if(parseFloat(upperbound)>d.winProb){
+                d.winRange = parseFloat(upperbound)-0.01;
+                break;
             }
         }
-        d.livelocation = livelocation;
-
-        d.realDate = `2020/${d.fbrq.replace(/月/, '/').replace(/日/, '')}`;
-        // d.origin = d.track && d.track.length > 0 ? d.track[0].from : '深圳';
-        d.qzDate = `${d.fbrq.replace(/月/, '/').replace(/日/, '')}`
+        
     })
+    return basicInfo.filter(d => d.num_total>150);
 }
 
 export function aggre(sortkey) {
-    const total = TrackJSON.length;
-    return _.chain(TrackJSON)
+    const total = basicInfo.length;
+    return _.chain(basicInfo)
         .reduce((obj, d) => {
             const key = d[sortkey] === '' ? '未知' : d[sortkey];
             const value = obj[key] ? obj[key].value + 1 : 1;
@@ -73,30 +56,43 @@ export function aggre(sortkey) {
 
 export function calculateNodeAndLink(data) {
     const links = [];
-    const linkIds = [];
     const nodes = data;
-    const nodeIds = data.map(d => d.blh);
+    const nodeIds = data.map(d => d.player_id);
     _.forIn(nodes, d => {
-        const relation = d.yqtblgx;
-        const targetId = d.blh;
-        if (relation) {
-            const relationArr = relation.match(/\d+/g);
-            relationArr.forEach(sourceid => {
-                if(nodeIds.includes(sourceid) && nodeIds.includes(targetId)) {
-                    linkIds.push(sourceid, targetId)
+        // const relation = match_list[d.player_id]
+        // const targetid = d.player_id;
+        // if (relation.length) {
+        //     const relationArr = relation.map(d => zh2id[d.opponent_name]);
+        //     d.match_opponents = relationArr 
+        //     relationArr.forEach(sourceid => {
+        //         if(nodeIds.includes(sourceid) && nodeIds.includes(targetid)) {
+        //             links.push({
+        //                 source: sourceid,
+        //                 target: targetid,
+        //             })
+        //         }
+        //     })
+        // }
+        const targetid = d.player_id;
+        const relation = match_list[targetid]
+        if (Object.keys(relation).length) {
+            Object.keys(relation).forEach(sourceid => {
+                if(nodeIds.includes(parseInt(sourceid)) && nodeIds.includes(targetid)) {
+                    const sid = parseInt(sourceid);
                     links.push({
-                        source: sourceid,
-                        target: targetId,
+                        source: {player_id: sid, name_zh: id2zh[sid]},
+                        target: {player_id: targetid, name_zh: id2zh[targetid]},
                     })
                 }
             })
         }
     })
-
-    nodes.forEach(d => {
-        const count = linkIds.filter(d1 => d1 === d.blh).length;
+    // calculate node radius
+    nodes.forEach(d => { 
+        // const winProb = d.num_total ? d.num_wins*1.0/d.num_total : 0;
         const r = 5;
-        d.r = r + count * 1.2;
+        // d.winProb = winProb;
+        d.r = r + (d.score_new-1500) * 0.001;
     })
 
     return [nodes, links];

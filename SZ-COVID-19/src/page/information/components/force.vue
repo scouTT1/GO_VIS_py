@@ -18,13 +18,13 @@
                     <div class="legend-item-icon">
                         <div class="legend-link min"></div>
                     </div>
-                    <div class="legend-item-desc">病例关系</div>
+                    <div class="legend-item-desc">对局</div>
                 </div>
                 <div class="legend-item">
                     <div class="legend-item-icon">
                         <div class="legend-circle min">0</div>
                     </div>
-                    <div class="legend-item-desc">病例个体，点击选择</div>
+                    <div class="legend-item-desc">棋手，点击选择</div>
                 </div>
                 <div class="legend-item">
                     <div class="legend-item-icon">
@@ -42,7 +42,7 @@
                     <div class="legend-item-icon">
                         <div class="legend-time min"></div>
                     </div>
-                    <div class="legend-item-desc">二级筛选条件(确诊时间)，拨动指针选择</div>
+                    <div class="legend-item-desc">二级筛选条件(积分)，拨动指针选择</div>
                 </div>
                 <div class="legend-item">
                     <div class="legend-item-icon">
@@ -54,7 +54,7 @@
         </div>
         <div id="chart" ref='chart'></div>
         <div class="info">
-            <Section title="病例信息" class="infoData">
+            <Section title="棋手信息" class="infoData">
                 <div v-if="caseDetail.length"
                     class="info-container"
                 >
@@ -67,9 +67,9 @@
                     <span class="info-item-value">{{item.value}}</span>
                     </div>
                 </div>
-                <NoData v-else title="请选择病例" />
+                <NoData v-else title="请选择棋手" />
             </Section>
-            <Section title="选定病例关系" class="treeData" height="100%">
+            <Section title="选定棋手对局" class="treeData" height="100%">
                 <div class="tree-container">
                     <Tree :data="treeData" />
                 </div>
@@ -80,17 +80,18 @@
 </template>
 
 <script>
+
     import * as d3 from 'd3'
     import * as d3Fisheye from 'd3-fisheye'
     import _ from 'lodash'
-    import TrackJSON from '@/data/track'
-    import province from '@/data/province'
+    // import basicInfo from '@/data/player_basic_info.json'
     // import Bar from './bar'
     import Tree from './tree'
     import Section from '@/components/section'
     import NoData from '@/components/noData'
     import { initData, calculateNodeAndLink } from '../methods/dataProcessor'
 
+    
     export default {
         name: 'Force',
         components: {
@@ -100,22 +101,29 @@
             Tree,
         },
         data() {
-            initData();
+            const basicInfo1=initData();
             const fisheyeRadius = 80;
-            const timeRange = d3.extent(TrackJSON, d => {
-                return new Date(d.realDate).getTime()
+            const scoreRange = d3.extent(basicInfo1, d => {
+                return d.score_new;
             });
-            this.TIME_RANGE = [...timeRange]
+            const winRange = d3.extent(basicInfo1, d => {
+                return d.winProb;
+            });
+            this.SCORE_RANGE = [...scoreRange]
+            this.WIN_RANGE = [...winRange]
             return {
+                basicInfo: basicInfo1,
                 treeData: [],
                 fisheyeRadius,
                 deminArr: [],
                 colorObj: {},
                 disbaled: [],
                 filterObj: {},
-                timeRange: timeRange,
+                scoreRange: scoreRange,
+                winRange: winRange,
                 caseDetail: [],
                 filterCondition: [],
+                tickCnt: 0,
             }
         },
         methods: {
@@ -184,65 +192,64 @@
                         .attr('fill', 'none')
                         .attr('display', 'none')
 
-                this.selectData = TrackJSON;
-                this.initTimeCircle();
-                this.initDemiCircle();
+                this.selectData = this.basicInfo;
+                this.initScoreCircle();
+                this.initDemiCircle(); 
                 this.createForce();
 
-                // 默认选中确诊时间
-                this.svg.select('g[data-sortKey=qzDate]')
+                // 默认选中分数范围
+                this.svg.select('g[data-sortKey=score_new]')
                     .dispatch('click')
             },
-            initTimeCircle(type) {
-                const gapTimeArr = _.chain(TrackJSON)
-                    .reduce((obj, d) => {
-                        obj[d.realDate] = {
-                            name: d.realDate,
-                            value: obj[d.realDate] ? obj[d.realDate].value + 1 : 1,
-                        }
-                        return obj;
-                    }, {})
-                    .values()
-                    .orderBy(d => new Date(d.name).getTime())
-                    .value();
-
-                const oneDay = 24 * 3600 * 1000;
-                const timeArr = [];
-                gapTimeArr.forEach((d, i) => {
-                    timeArr.push(d);
-                    if(gapTimeArr[i+1]) {
-                        const timeItemArr = [d.name, gapTimeArr[i+1].name].map(d1 => new Date(d1).getTime())
-                        const timeSpace = timeItemArr[1] - timeItemArr[0] - oneDay;
-                        const dayCount = timeSpace/oneDay;
-                        for(let i = 1; i <= dayCount; i++){
-                            timeArr.push({
-                                name: new Date(timeItemArr[0] + i * oneDay).toLocaleDateString(),
-                                value: d.value
-                            })
-                        }
-                    }
-                })
-
-                const isQZDate = type === 'qzDate'
-
-                if (type && !isQZDate) {
-                    timeArr.length = 0
-                    _.chain(TrackJSON)
+            initScoreCircle(type) {
+                if(!type){
+                    type = 'score_new';
+                }
+                const isNumber = (type === 'score_new'|| type === 'winProb');
+                var scoreArr = [];
+                // if(!type){ // 初始化
+                //     scoreArr = _.chain(basicInfo)
+                //     .map(d=>({
+                //         id: d.score_new,
+                //         score: d.score_new
+                //     }))
+                //     .orderBy('score')
+                //     .value();
+                // }
+                //非数字属性筛选
+                if(!isNumber){
+                    _.chain(this.basicInfo)
                         .map(type)
                         .countBy()
-                        .map((d, k) => ({
-                            name: k,
-                            value: d,
-                            sortkey: type,
+                        .map((d, k)=>({
+                            id: k,
+                            score: d,
+                            sortkey: type
                         }))
-                        .orderBy('name')
-                        .forEach(d => {
-                            timeArr.push(d)
+                        .orderBy('id')
+                        .forEach(d=>{
+                            scoreArr.push(d)
                         })
                         .value()
                 }
+                //数字属性筛选
+                else if(isNumber){
+                    scoreArr.length = 0
+                    _.chain(this.basicInfo)
+                        .map(d=>({
+                            id: d[type],
+                            score: d[type],
+                            sortkey: type
+                        }))
+                        .orderBy('id')
+                        .forEach(d=>{
+                            scoreArr.push(d)
+                        })
+                        .value()
+                }
+                //取数列最大最小值
+                const [min, max] = d3.extent(scoreArr, d=>d.score);
 
-                const [min, max] = d3.extent(timeArr, d => d.value);
                 const color = d3.scaleLinear()
                     .domain([min, max / 2, max])
                     .range(['#009688', '#ffc107', '#ff0000'])
@@ -250,54 +257,54 @@
                 const pie = d3.pie()
                     .padAngle(0)
                     .sort(null)
-                    .value(d => type && !isQZDate ? d.value : 1)
+                    .value(d => type ? d.score : 1)
 
                 const arc = d3.arc()
-                    .innerRadius(this.timeRadius[0])
-                    .outerRadius(this.timeRadius[1]);
+                    .innerRadius(this.scoreRadius[0])
+                    .outerRadius(this.scoreRadius[1]);
 
                 if(type) {
-                    pie.padAngle(0.01)
+                    pie.padAngle(0.005)
                     // arc.cornerRadius(10)
                 }
 
-                const arcs = pie(timeArr);
+                const arcs = pie(scoreArr);
 
-                this.svg.select('g.timeLine').remove()
+                this.svg.select('g.scoreLine').remove()
 
                 const container = this.svg.append('g')
-                    .classed('timeLine', true);
+                    .classed('scoreLine', true);
                 
                 const _this = this
 
                 const arcG = container
-                    .selectAll('g.timelineArc')
+                    .selectAll('g.scorelineArc')
                     .data(arcs)
                     .enter()
                     .append('g')
-                    .classed('timelineArc', true)
+                    .classed('scorelineArc', true)
                     .on('click', function(d) {
-                        if (!type || isQZDate) return
-                        const { name } = d.data;
+                        if (!type) return
+                        const { id } = d.data;
                         const arc = d3.select(this)
                             .select('path.normal')
                         const arcBigger = d3.select(this)
                             .select('path.bigger')
 
-                        if(_this.filterObj[type].includes(name)) {
+                        if(_this.filterObj[type].includes(id)) {
                             arc.classed('arc-none', false)
                             arcBigger.classed('arc-none', true)
-                            _this.filterObj[type] = _this.filterObj[type].filter(d => d !== name);
+                            _this.filterObj[type] = _this.filterObj[type].filter(d => d !== id);
                         } else {
                             arc.classed('arc-none', true)
                             arcBigger.classed('arc-none', false)
-                            _this.filterObj[type].push(name);
+                            _this.filterObj[type].push(id);
                         }
                         _this.selectType();
                     })
 
                 arcG.append('path')
-                    .attr("fill", d => type && !isQZDate ?  '#116cd5' : color(d.data.value))
+                    .attr("fill", d => type && !isNumber ? '#116cd5' : color(d.data.score))
                     .attr("d", arc)
                     .attr("stroke", () => type ? '#aaa' : 'none')
                     .attr('cursor', () => type ? 'pointer' : null)
@@ -314,11 +321,11 @@
                     })
 
                 const arcBigger = d3.arc()
-                    .innerRadius(this.timeRadius[0])
-                    .outerRadius(this.timeRadius[1] + 5);
+                    .innerRadius(this.scoreRadius[0])
+                    .outerRadius(this.scoreRadius[1] + 5);
 
                 arcG.append('path')
-                    .attr("fill", d => type ? '#116cd5' : color(d.data.value))
+                    .attr("fill", d => type ? '#116cd5' : color(d.data.score))
                     .attr("d", arcBigger)
                     .attr('cursor', () => type ? 'pointer' : null)
                     .classed('bigger', true)
@@ -329,10 +336,10 @@
 
                 text.append('path')
                     .attr('fill', 'none')
-                    .attr('id', d => `hiddenArc${d.data.name}`)
+                    .attr('id', d => `hiddenArc${d.data.id}`)
                     .attr('d', d => {
                         const {startAngle, endAngle} = d;
-                        const [innerRadius, outerRadius] = this.timeRadius;
+                        const [innerRadius, outerRadius] = this.scoreRadius;
                         const angles = [startAngle, endAngle].map(d1 => d1 - Math.PI / 2)
                         const r = (innerRadius + outerRadius) / 2;
                         const middleAngle = (angles[1] + angles[0]) / 2
@@ -347,21 +354,21 @@
                     .attr('startOffset', '50%')
                     .attr('font-size', '9px')
                     .attr('fill', '#fff')
-                    .attr('href', d => `#hiddenArc${d.data.name}`)
-                    .text(d => d.data.name.replace('2020/', ''))
+                    .attr('href', d => `#hiddenArc${d.data.id}`)
+                    .text(d => d.data.id)
                     .attr('display', function(d) {
                         const { width } = this.getBoundingClientRect()
                         const rad = d.endAngle - d.startAngle
-                        const [innerRadius] = _this.timeRadius;
+                        const [innerRadius] = _this.scoreRadius;
                         const calWidth =  innerRadius * rad
                         return type && width >= calWidth ? 'none' : null
                     });
 
-                const radius = this.timeRadius[1] + (this.deminRadius[0] - this.timeRadius[1]) / 2;
+                const radius = this.scoreRadius[1] + (this.deminRadius[0] - this.scoreRadius[1]) / 2;
 
                 const indexScale = d3.scaleLinear()
                         .domain([0, 1])
-                        .range([0, timeArr.length - 1]);
+                        .range([0, scoreArr.length - 1]);
 
                 function dragStart(){
                     let rad = Math.atan2(d3.event.y, d3.event.x);
@@ -382,14 +389,19 @@
                     if(rad < 0)  rad = Math.PI * 2 + rad
                     const scale = rad / (Math.PI * 2);
                     // const timeIndex = Math.ceil(indexScale(scale));
-                    const timeIndex = parseInt(indexScale(scale));
-                    const timeItem = new Date(timeArr[timeIndex].name).getTime();
-                    // if(timeItem <= this.timeRange[0]) {
+                    const scoreIndex = parseInt(indexScale(scale));
+                    const scoreItem = scoreArr[scoreIndex].score;
+                    // if(timeItem <= this.scoreRange[0]) {
                         // index = 0
-                    // } else if(timeItem >= this.timeRange[1]) {
+                    // } else if(timeItem >= this.scoreRange[1]) {
                         // index = 1;
                     // }
-                    this.timeRange[index] = timeItem;
+                    if(type==='score_new'){
+                        this.scoreRange[index] = scoreItem;
+                    }
+                    else if(type === 'winProb'){
+                        this.winRange[index] = scoreItem;
+                    }
                     this.selectType();
                 }
 
@@ -401,7 +413,7 @@
                     .attr('transform', () => {
                         return `translate(${0}, ${radius * Math.sin( - Math.PI / 2)})`
                     })
-                    .attr('display', () => type && !isQZDate ? 'none' : null)
+                    .attr('display', () => !isNumber ? 'none' : null)
                     .call(
                         d3.drag()
                         .on("drag", dragStart)
@@ -416,7 +428,7 @@
                         return `translate(${0}, ${radius * Math.sin( - Math.PI / 2)})`
                     })
                     .attr('display', function() {
-                        return type && !isQZDate ? 'none' : null})
+                        return  !isNumber ? 'none' : null})
                     .call(
                         d3.drag()
                         .on("drag", dragStart)
@@ -425,63 +437,30 @@
             },
             initDemiCircle() {
                 const deminArr = [{
-                    name: '染病原因',
-                    sortkey: 'reason',
-                }, {
-                    name: '确诊时间',
-                    sortkey: 'qzDate',
+                    name: '姓氏',
+                    sortkey: 'family_name'
                 },
                 {
-                    name: '年龄',
-                    sortkey: 'nlRange',
+                    name: '国籍',
+                    sortkey: 'country',
+                }, {
+                    name: '积分',
+                    sortkey: 'score_new',
+                },
+                {
+                    name: '段数',
+                    sortkey: 'level',
                 }, 
                 {
-                    name: '来源地',
-                    sortkey: 'origin'
-                },
-                {
-                    name: '病例关系',
-                    sortkey: 'relation',
-                }]
-
+                    name: '胜率',
+                    sortkey: 'winProb',
+                }
+                ]
+                
                 deminArr.forEach(d => {
                     this.filterObj[d.sortkey] = [];
                 })
-
                 this.deminArr = deminArr
-
-                const deminData = _.chain(deminArr)
-                    .map(d => {
-                        const key = d.sortkey;
-                        let useData = TrackJSON;
-                        if (d.name === '来源地(国外)') {
-                            useData = TrackJSON.filter(d1 => !province.includes(d1[key]))
-                        } else if(d.name === '来源地(国内)') {
-                            useData = TrackJSON.filter(d1 => province.includes(d1[key]))
-                        }
-                        const deminDetailArr = _.chain(useData)
-                            .map(key)
-                            .uniq()
-                            .map(d1 => ({
-                                name: d1,
-                                type: d.name,
-                                sortkey: key,
-                            }))
-                            .value();
-
-                        if(key === 'nlRange') {
-                            deminDetailArr.sort((a, b) => {
-                                const arr = [a, b].map(d1 => Number(d1.name.split('~')[0]));
-                                return arr[0] - arr[1];
-                            })
-                        }
-                        return deminDetailArr;
-                    })
-                    .flatten()
-                    .value()
-
-                this.forignOrigin = deminData.filter(d => d.type === "来源地(国外)")
-                    .map(d => d.name)
 
                 const pie = d3.pie()
                     .padAngle(.005)
@@ -530,16 +509,17 @@
                                 .classed('arc-none', true)
                             arcBigger.classed('arc-none', false)
                             arc.classed('arc-none', true)
-                            _this.initTimeCircle(sortkey === 'qzDate' ? undefined : sortkey)
+                            _this.initScoreCircle(sortkey)
                         } else {
                             arcG.selectAll('path.normal')
                                 .classed('arc-none', false)
                             arcG.selectAll('path.bigger')
                                 .classed('arc-none', true)
-                            _this.initTimeCircle()
+                            _this.initScoreCircle()
                         }
                         // 重置选择的时间范围
-                        _this.timeRange = [..._this.TIME_RANGE]
+                        _this.scoreRange = [..._this.SCORE_RANGE]
+                        _this.winRange = [..._this.WIN_RANGE]
                         _this.selectType()
                     })
 
@@ -608,44 +588,51 @@
                 return coord;
             },
             createForce() {
+                this.tickCnt=0;
                 this.simulation = d3.forceSimulation()
                     .force("link", d3.forceLink()
-                        .id(d => d.blh)
+                        .id(d => d.player_id)
                     )
                     .force("charge", 
-                        d3.forceManyBody().strength(-20)
+                        d3.forceManyBody().strength(-10)
                     )
                     .force("x", d3.forceX())
                     .force("y", d3.forceY())
                     // .force('center', d3.forceCenter(0, 0))// 向心力
-                    // .force('collide',d3.forceCollide()  // 圆的碰撞力
-                    //     .radius(10)  // 根据指定的半径创建一个碰撞力。默认为 1
-                    // )
+                    .force('collide',d3.forceCollide()  // 圆的碰撞力
+                        .radius(10)  // 根据指定的半径创建一个碰撞力。默认为 1
+                    )
                     // .force('r', d3.forceRadial(
                     //         this.forceRadius[1],0,0
                     //     ).strength(.5))
+
                     .on("tick", () => {
-                        d3.selectAll('.circleG')
+                        this.tickCnt+=1;
+                        if(this.tickCnt>=20){
+                            d3.selectAll('.circleG')
                             .attr('transform', d => {
                                 //  d.x = this.pythag(d.r, d.y, d.x); 
                                 // d.y = this.pythag(d.r, d.x, d.y);
                                 return `translate(${d.x}, ${d.y})`
                             });
-
-                        d3.selectAll('.linkItem')
-                            .attr('transform', d => {
-                                return `translate(${d.source.x}, ${d.source.y})`
-                            })
-                            .select('line')
-                            .attr("x1", 0)
-                            .attr("y1", 0)
-                            .attr("x2", d => d.target.x - d.source.x)
-                            .attr("y2", d => d.target.y - d.source.y);
+                            this.tickCnt=0;
+                        }
                         
-                        d3.selectAll('.linkItem')
-                            .select('text')
-                            .attr('dx', d => (d.target.x - d.source.x) / 2)
-                            .attr('dy', d => (d.target.y - d.source.y) / 2)
+                        // LINK
+                        // d3.selectAll('.linkItem')
+                        //     .attr('transform', d => {
+                        //         return `translate(${d.source.x}, ${d.source.y})`
+                        //     })
+                        //     .select('line')
+                        //     .attr("x1", 0)
+                        //     .attr("y1", 0)
+                        //     .attr("x2", d => d.target.x - d.source.x)
+                        //     .attr("y2", d => d.target.y - d.source.y);
+                        
+                        // d3.selectAll('.linkItem')
+                        //     .select('text')
+                        //     .attr('dx', d => (d.target.x - d.source.x) / 2)
+                        //     .attr('dy', d => (d.target.y - d.source.y) / 2)
                     });
 
                 const fisheye = d3Fisheye.radial()
@@ -672,8 +659,8 @@
                         .select('circle')
                         .attr('r', d => {
                             const r = d.fisheye[2] * d.r;
-                            if(r>12) {
-                                return 12;
+                            if(r>30) {
+                                return 30;
                             }
                             return r
                         });
@@ -681,40 +668,24 @@
                     d3.selectAll('.circleG')
                         .select('text')
                         .attr('font-size', d => {
-                            const r =  d.fisheye[2] * 5;
-                            if(r>9) {
-                                return 9;
+                            const r =  d.fisheye[2] * 15;
+                            if(r>18) {
+                                return 18;
                             }
                             return r
                         });
 
-                    d3.selectAll('.linkItem')
-                        .attr('transform', d => {
-                            return `translate(${d.source.fisheye[0]}, ${d.source.fisheye[1]})`
-                        })
-                        .select('line')
-                        .attr("x1", 0)
-                        .attr("y1", 0)
-                        .attr("x2", d => d.target.fisheye[0] - d.source.fisheye[0])
-                        .attr("y2", d => d.target.fisheye[1] - d.source.fisheye[1])
-                        .attr('opacity', d => (d.target.fisheye[2] === 1 || d.source.fisheye[2] === 1) ? '.2' : '1')
-
-                    d3.selectAll('.linkItem')
-                        .select('text')
-                        .attr('font-size', d => d.source.fisheye[2] * 5)
-                        .attr('dx', d => (d.target.fisheye[0] - d.source.fisheye[0]) / 2)
-                        .attr('dy', d => (d.target.fisheye[1] - d.source.fisheye[1]) / 2)
-                        .attr('transform', d => {
-                            const { atan, abs, PI} = Math
-                            const [x1, y1] = d.source.fisheye
-                            const [x2, y2] = d.target.fisheye
-                            const x = abs(x2 - x1)
-                            const y = abs(y2 - y1)
-                            const rad = atan(y / x)
-                            const ang = 180 / PI * rad
-                            return `rotate(${ang}, ${(x2 - x1) / 2}, ${(y2 - y1) / 2})`
-                        })
-                        .attr('display', d => d.target.fisheye[2] === 1 ? 'none' : null)
+                    //LINK
+                    // d3.selectAll('.linkItem')
+                    //     .attr('transform', d => {
+                    //         return `translate(${d.source.fisheye[0]}, ${d.source.fisheye[1]})`
+                    //     })
+                    //     .select('line')
+                    //     .attr("x1", 0)
+                    //     .attr("y1", 0)
+                    //     .attr("x2", d => d.target.fisheye[0] - d.source.fisheye[0])
+                    //     .attr("y2", d => d.target.fisheye[1] - d.source.fisheye[1])
+                    //     .attr('opacity', d => (d.target.fisheye[2] === 1 || d.source.fisheye[2] === 1) ? '.2' : '1')
 
                     const mouseR = Math.sqrt(mouse.reduce((c, d) => c + Math.pow(d, 2), 0))
                     
@@ -739,66 +710,68 @@
 
                         d3.selectAll('.circleG')
                             .select('text')
-                            .attr('font-size', 5);
+                            .attr('font-size', 12);
 
-                        d3.selectAll('.linkItem')
-                            .attr('transform', d => `translate(${d.source.x}, ${d.source.y})`)
-                            .select('line')
-                            .attr('opacity', 1)
-                            .attr("x1", 0)
-                            .attr("y1", 0)
-                            .attr("x2", d => d.target.x - d.source.x)
-                            .attr("y2", d => d.target.y - d.source.y)
+                        //LINK
+                        // d3.selectAll('.linkItem')
+                        //     .attr('transform', d => `translate(${d.source.x}, ${d.source.y})`)
+                        //     .select('line')
+                        //     .attr('opacity', 1)
+                        //     .attr("x1", 0)
+                        //     .attr("y1", 0)
+                        //     .attr("x2", d => d.target.x - d.source.x)
+                        //     .attr("y2", d => d.target.y - d.source.y)
                         
-                        d3.selectAll('.linkItem')
-                            .select('text')
-                            .attr('font-size', 5)
+                        // d3.selectAll('.linkItem')
+                        //     .select('text')
+                        //     .attr('font-size', 5)
                     }
                 })
-
-                this.linkContainer = forceContainer.append('g').classed('links', true);
+                // LINK
+                // this.linkContainer = forceContainer.append('g').classed('links', true);
                 this.nodeContainer = forceContainer.append('g').classed('nodes', true);
             },
             draw() {
                 this.treeData = [];
                 this.calcualteDetailInfo();
                 this.calcualteDetailInfo(-1);
+                // nodes在selectData的基础上增加了节点的半径， 
                 const [nodes, links] = calculateNodeAndLink(this.selectData);
-
-                this.simulation.nodes(nodes);
-                this.simulation.force("link").links(links);
-
-                const linkUpdate = this.linkContainer
-                    .selectAll(".linkItem")
-                    .data(links, d => `${d.source.blh}_${d.target.blh}`);
                 
-                const linkG = linkUpdate.enter()
-                    .append('g')
-                    .classed('linkItem', true);
+                this.simulation.nodes(nodes);
+                // LINK
+                // this.simulation.force("link").links(links);
 
-                linkG.append("line")
+                // const linkUpdate = this.linkContainer
+                //     .selectAll(".linkItem")
+                //     .data(links, d => `${d.source.player_id}_${d.target.player_id}`);
+                
+                // const linkG = linkUpdate.enter()
+                //     .append('g')
+                //     .classed('linkItem', true);
 
-                linkG.append('text')
-                    .attr('font-size', 5)
-                    .attr('x', 0)
-                    .attr('y', 0)
-                    .attr('dx', d => (d.target.x - d.source.x) / 2)
-                    .attr('dy', d => (d.target.y - d.source.y) / 2)
-                    .attr('display', 'none')
-                    .text(d => {
-                        let showText = d.target.blh;
-                        if(d.target.yqtblgx) {
-                            const blharr = d.target.yqtblgx.match(/(\d+、?)+/g)[0];
-                            showText = d.target.yqtblgx.split(blharr)[1];
-                        }
-                        return showText
-                    })
+                // linkG.append("line")
 
-                linkUpdate.exit().remove();
+                // linkG.append('text')
+                //     .attr('font-size', 5)
+                //     .attr('x', 0)
+                //     .attr('y', 0)
+                //     .attr('dx', d => (d.target.x - d.source.x) / 2)
+                //     .attr('dy', d => (d.target.y - d.source.y) / 2)
+                //     .attr('display', 'none')
+                //     .text(d => {
+                //         let showText = d.target.player_id;
+                //         if(d.target.match_opponents.length) {
+                //             showText = d.target.match_opponents;
+                //         }
+                //         return showText
+                //     })
+
+                // linkUpdate.exit().remove();
 
                 const nodeUpdate = this.nodeContainer
                     .selectAll(".circleG")
-                    .data(nodes, d => d.blh)
+                    .data(nodes, d => d.player_id)
 
                 nodeUpdate.select('circle')
                         .attr('r', d => d.r)
@@ -809,22 +782,22 @@
                     .attr('cursor', 'pointer')
                     .on('click', d => {
                         const relationArr = links.reduce((arr, d1) => {
-                            if(d1.source.blh === d.blh) {
-                                arr.push(d1.target)
-                            } else if( d1.target.blh === d.blh ){
+                            // if(d1.source.player_id === d.player_id) {
+                            //     arr.push(d1.target)
+                            // } else 
+                            if( d1.target.player_id === d.player_id ){
                                 arr.push(d1.source)
                             }
                             return arr;
                         }, [])
                         var obj = {
-                            name: d.blh,
+                            name: d.name_zh,
                             children: [],
                         }
                         relationArr.forEach(d => {
-                            const blharr = d.yqtblgx.match(/(\d+、?)+/g)[0];
-                            const showText = d.yqtblgx.split(blharr)[1];
+                            const showText = d.player_id;
                             obj.children.push({
-                                name: `${d.blh}(${showText})`,
+                                name: `${d.name_zh}(${showText})`,
                             })
                         })
                         this.treeData = obj;
@@ -841,9 +814,9 @@
                     .attr('r', d => d.r)
 
                 newAddNode.append("text")
-                    .attr('font-size', 5)
+                    .attr('font-size', 12)
                     .text(d => {
-                        let showText = d.blh;
+                        let showText = d.family_name;
                         return showText
                     })
 
@@ -854,20 +827,24 @@
                     .restart();
             },
             selectType() {
-                console.log(this.timeRange.map(d => new Date(d).toLocaleDateString()));
-                this.selectData = TrackJSON.filter(d => {
+                console.log(this.scoreRange); //print selected scoreRange
+                const _this = this;
+                this.selectData = this.basicInfo.filter(d => {
                     let isKeep = true;
-                    Object.keys(this.filterObj)
-                        .filter(key => this.filterObj[key].length > 0)
+                    Object.keys(_this.filterObj)
+                        .filter(key => _this.filterObj[key].length > 0)
                         .forEach(key => {
-                            isKeep && (isKeep = this.filterObj[key].includes(d[key]))
+                            isKeep && (isKeep = _this.filterObj[key].includes(d[key]))
                         })
                     return isKeep;
                 }).filter(d => {
-                    const timeStap = new Date(d.realDate).getTime();
-                    return timeStap >= this.timeRange[0] && timeStap <= this.timeRange[1];
+                    const scoreStap = d.score_new;
+                    return scoreStap >= _this.scoreRange[0] && scoreStap <= _this.scoreRange[1];
+                }).filter(d => {
+                    const winStap = d.winProb;
+                    return winStap >= _this.winRange[0] && winStap <= _this.winRange[1];
                 });
-                const strengthScale = d3.scaleLinear().domain([TrackJSON.length, 0]).range([18, 40])
+                const strengthScale = d3.scaleLinear().domain([this.basicInfo.length, 0]).range([18, 40])
                 const forceCount = strengthScale(this.selectData.length);
                 this.simulation.force("charge", 
                     d3.forceManyBody().strength(-forceCount)
@@ -881,38 +858,45 @@
                 this.width = width;
                 this.height = height;
                 this.forceRadius = [0, radius - 70];
-                this.timeRadius = [radius - 70, radius - 50] ;
+                this.scoreRadius = [radius - 70, radius - 50] ;
                 this.deminRadius = [radius - 30, radius - 10];
             },
             calcualteDetailInfo(d) {
                 let info = [];
                 if(d) {
-                    const include = ['blh','xb', 'nl',  'bk', 'fbrq', 'rysj', 'rbyy', 'bzzzytjd'];
+                    const include = ['name_zh', 
+                                     'name_en',  
+                                     'num_wins', 
+                                     'num_losses', 
+                                     'num_total', 
+                                     'birthday', 
+                                     'score_new', 
+                                     'sex',
+                                     'country',
+                                     'level',
+                                     'winProb'];
                     const descObj = {
-                        "yqtblgx": "与其他病例关系",
-                        "zwhsjqj": "在武汉时间",
-                        "rbyy": "染病原因",
-                        "bzzzytjd": "备注",
-                        "bk": "病况",
-                        "xb": "性别",
-                        "rysj": "入院时间",
-                        "lssj": "来深时间",
-                        "fbingsj": "发病时间",
-                        "fbrq": "确诊日期",
-                        "jzd": "居住地",
-                        "fbusj": "发布时间",
-                        "nl": "年龄",
-                        "blh": "病例号",
-                        "nationality&native":"国籍和籍贯（国内有籍贯者记录籍贯）",
-                        "track":"途径地",
-                        "track_time":"途径地的时间",
-                        "track_trans":"途径交通工具",
-                        "treatment_hospital":"救治医院"
+                                    "name_zh": "姓名(中文)", 
+                                    "name_en": "姓名(英文)",  
+                                    "sex": "性别",
+                                    "country": "国籍",
+                                    "score_new": "积分", 
+                                    "level": "级段",
+                                    "num_wins": "胜场数", 
+                                    "num_losses": "负场数", 
+                                    "num_total": "总局数", 
+                                    "birthday": "生日",
+                                    "winProb": "胜率"
                     }
                     include.forEach(d1 => {
+                        var val = (d === -1 ? '' : d[d1] || '暂无')
+                        if(d1 == "winProb" && val !== ''){
+                            val = Number(val*100).toFixed(1);
+                            val += "%";
+                        }
                         info.push({
                             key: descObj[d1],
-                            value: d === -1 ? '' : d[d1] || '暂无',
+                            value: val,
                         })
                     })
                     this.caseDetail = info
@@ -920,19 +904,23 @@
                     const filterArr = [];
                     const deminArr = this.deminArr.map(d => ({
                         name: d.name,
-                        sortkey: d.name === '来源地(国外)' ? 'forignOrigin' : d.sortkey,
+                        sortkey: d.sortkey,
                     }))
 
-                    const dateRange = this.timeRange.join('~') === this.TIME_RANGE.join('~')
+                    const scoreRange = this.scoreRange.join('~') === this.SCORE_RANGE.join('~')
                         ? []
-                        : [this.timeRange.map(d => {
-                            const date  = new Date(d)
-                            return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`
+                        : [this.scoreRange.map(d => {
+                            return `${d}`
                             }).join('~')]
-                    
+                    const winRange = this.winRange.join('~') === this.WIN_RANGE.join('~')
+                        ? []
+                        : [this.winRange.map(d => {
+                            return `${d}`
+                            }).join('~')]
                     const filterObj = {
                         ...this.filterObj,
-                        qzDate: dateRange,
+                        score_new: scoreRange,
+                        winProb: winRange,
                     }
                     
                     _.chain(filterObj)
@@ -945,19 +933,20 @@
                         })
                         .value();
                     filterArr.push({
-                        name: '病例数量',
+                        name: '棋手数量',
                         value: this.selectData.length,
                     })
                     this.filterCondition = filterArr;
                 }
             },
             handleReset() {
+                const _this = this
                 const chartContainer = d3.select('#chart')
                     .on('click.reset', () => {
                         if(d3.event.target === chartContainer
                             || d3.event.target === chartContainer.querySelector('svg')) {
-                                this.timeRange = d3.extent(TrackJSON, d => {
-                                    return new Date(d.realDate).getTime()
+                                this.scoreRange = d3.extent(_this.basicInfo, d => {
+                                    return d.score_new
                                 });
                                 this.initChart()
                                 this.selectType();
@@ -1110,8 +1099,8 @@
         }
     }
 
-    .timeLine {
-        .timelineArc {
+    .scoreLine {
+        .scorelineArc {
             transition: .3s;
         }
     }
@@ -1140,6 +1129,9 @@
         justify-content: space-between;
         .infoData{
             height: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         .info-container{
             min-height: 200px;
