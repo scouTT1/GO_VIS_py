@@ -30,9 +30,9 @@
                     @mouseover="mouseOver(item,index)"
                     @mouseleave="mouseLeave(item,index)"
                 >
-                    <div>{{item.name}}</div>
-                    <div>{{item.country}}</div>
-                    <div>{{item.count}}</div>
+                    <span>{{item.name}}</span>
+                    <span>{{item.country}}</span>
+                    <span>{{item.count}}</span>
                 </li>
             </ul>
         </div>
